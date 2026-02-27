@@ -3,8 +3,9 @@ Analytics Service - Provides detailed analytics and data analysis
 """
 
 from backend.database import ParseHubDatabase
-from datetime import datetime, timedelta
-from typing import Dict, List
+from datetime import datetime
+from typing import Dict, List, Any, Optional
+
 import json
 import sqlite3
 import sys

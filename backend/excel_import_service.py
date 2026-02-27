@@ -19,7 +19,10 @@ try:
 except ImportError:
     pd = None
 
-from backend.database import ParseHubDatabase
+try:
+    from backend.database import ParseHubDatabase
+except ImportError:
+    from database import ParseHubDatabase
 
 
 class ExcelImportService:

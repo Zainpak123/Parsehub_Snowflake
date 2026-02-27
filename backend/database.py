@@ -4,14 +4,23 @@ import os
 from datetime import datetime
 from pathlib import Path
 from dotenv import load_dotenv
+from typing import List, Dict, Any, Optional
 
 # Optional PostgreSQL support
 try:
     import psycopg2
     from psycopg2.extras import RealDictCursor
     POSTGRES_AVAILABLE = True
+    HAS_PSYCOPG2 = True
 except ImportError:
-    POSTGRES_AVAILABLE = False
+    try:
+        import pg8000
+        POSTGRES_AVAILABLE = True
+        HAS_PSYCOPG2 = False
+    except ImportError:
+        POSTGRES_AVAILABLE = False
+        HAS_PSYCOPG2 = False
+
 
 # Load environment variables from .env files
 dotenv_path = Path(__file__).parent / ".env"
@@ -45,7 +54,19 @@ class ParseHubDatabase:
     def _get_connection(self):
         """Get a new database connection based on type"""
         if self.use_postgres:
-            conn = psycopg2.connect(self.db_url)
+            if HAS_PSYCOPG2:
+                conn = psycopg2.connect(self.db_url)
+            else:
+                import pg8000
+                from urllib.parse import urlparse
+                url = urlparse(self.db_url)
+                conn = pg8000.connect(
+                    user=url.username,
+                    password=url.password,
+                    host=url.hostname,
+                    port=url.port,
+                    database=url.path[1:]
+                )
             # Make PG behave similar to SQLite's isolation_level=None (autocommit)
             conn.autocommit = True
             return conn
@@ -90,26 +111,39 @@ class ParseHubDatabase:
                 return self.cursor.execute(sql, params)
             return self.cursor.execute(sql)
 
+        def _row_to_dict(self, row):
+            if row is None: return None
+            # If it's already a dict (psycopg2 RealDictCursor), return it
+            if isinstance(row, dict):
+                return row
+            # If it's a tuple (pg8000), convert using description
+            if hasattr(self.cursor, 'description') and self.cursor.description:
+                columns = [col[0] for col in self.cursor.description]
+                return dict(zip(columns, row))
+            return row
+
         def fetchone(self):
             row = self.cursor.fetchone()
-            return dict(row) if row else None
+            return self._row_to_dict(row)
 
         def fetchall(self):
-            return [dict(row) for row in self.cursor.fetchall()]
+            return [self._row_to_dict(row) for row in self.cursor.fetchall()]
 
         @property
         def lastrowid(self):
-            # Complex to implement globally in PG without RETURNING id
-            # This is a risk point if the app relies heavily on it
-            self.cursor.execute("SELECT lastval()")
-            return self.cursor.fetchone()[0]
+            try:
+                self.cursor.execute("SELECT lastval()")
+                return self.cursor.fetchone()[0]
+            except:
+                return None
 
         def __iter__(self):
             for row in self.cursor:
-                yield dict(row)
+                yield self._row_to_dict(row)
 
         def __getattr__(self, name):
             return getattr(self.cursor, name)
+
 
     def cursor(self):
         """Get a cursor with compatibility shim"""

@@ -7,7 +7,7 @@ import os
 import sys
 import time
 import requests
-from typing import Dict, List
+from typing import Dict, List, Any, Optional
 from backend.url_generator import URLGenerator
 from backend.scraping_session_service import ScrapingSessionService
 from backend.data_consolidation_service import DataConsolidationService
