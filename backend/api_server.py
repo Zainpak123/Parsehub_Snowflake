@@ -120,16 +120,23 @@ def return_db_connection(exc=None):
     if db is not None and db.use_postgres:
         db.disconnect()   # puts conn back in pool
 
+# ── Health Blueprint ─────────────────────────────────────────────────────────────
+# Using a Blueprint + explicit endpoint names avoids AssertionError when the
+# old inline health_check() definition at the bottom of this file was also
+# being registered on the same Flask app.
 
-# ── Health endpoints ────────────────────────────────────────────────────────────
+from flask import Blueprint as _Blueprint
 
-@app.route('/api/health', methods=['GET'])
+_health_bp = _Blueprint('health', __name__)
+
+
+@_health_bp.route('/api/health', methods=['GET'], endpoint='health_check_v1')
 def health_check():
     """Lightweight liveness probe — never touches the database."""
     return jsonify({'status': 'ok', 'service': 'parsehub-backend'}), 200
 
 
-@app.route('/api/health/db', methods=['GET'])
+@_health_bp.route('/api/health/db', methods=['GET'], endpoint='health_db_v1')
 def health_check_db():
     """Readiness probe — verifies database connectivity."""
     try:
@@ -140,6 +147,10 @@ def health_check_db():
         return jsonify({'status': 'error', 'database': 'unreachable'}), 503
     except Exception as exc:
         return jsonify({'status': 'error', 'detail': str(exc)}), 503
+
+
+# Register once — blueprint handles deduplication automatically
+app.register_blueprint(_health_bp)
 
 
 # ── Background services ───────────────────────────────────────────────────────────
@@ -1789,14 +1800,7 @@ def get_incomplete_projects():
         logger.error(f'Error getting incomplete projects: {e}')
         return jsonify({'error': str(e)}), 500
 
-# ========== HEALTH CHECK ==========
-
-
-@app.route('/api/health', methods=['GET'])
-def health_check():
-    """Health check endpoint"""
-    return jsonify({'status': 'healthy', 'timestamp': datetime.now().isoformat()}), 200
-
+# (Health endpoints moved to _health_bp Blueprint above, around line 122)
 
 # ========== ERROR HANDLERS ==========
 
