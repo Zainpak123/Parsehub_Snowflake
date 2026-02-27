@@ -4,19 +4,18 @@
  * baseURL is intentionally EMPTY ("") so every request goes to the
  * same-origin Next.js server (/api/projects, /api/metadata, etc.).
  *
- * Next.js route handlers then proxy server-to-server to the Flask backend.
- * The browser NEVER touches the Flask domain — eliminating all CORS issues.
- *
- * NEXT_PUBLIC_API_BASE_URL is no longer needed or used here.
+ * All requests to /api/* include x-api-key from NEXT_PUBLIC_BACKEND_API_KEY.
  */
 
 import axios, { AxiosInstance, AxiosError } from 'axios';
+import { getApiHeaders } from './apiBase';
 
 // baseURL must be empty so all requests go to same origin (Next.js)
 const apiClient: AxiosInstance = axios.create({
     baseURL: '',   // <-- same-origin: browser -> Next.js /api/* routes
     headers: {
         'Content-Type': 'application/json',
+        ...getApiHeaders(),
     },
     timeout: 30_000,
 });

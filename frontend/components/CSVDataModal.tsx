@@ -1,5 +1,6 @@
 "use client";
 import apiClient from "@/lib/apiClient";
+import { getApiHeaders } from "@/lib/apiBase";
 
 import { useState, useEffect } from "react";
 import { Download, Eye, FileJson, Loader2, FileText } from "lucide-react";
@@ -43,6 +44,7 @@ export default function CSVDataModal({
           `/api/analytics?token=${token}&force=true`,
           {
             signal: controller.signal,
+            headers: getApiHeaders(),
           },
         );
 

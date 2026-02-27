@@ -1,4 +1,4 @@
-import { getApiBaseUrl } from "@/lib/apiBase";
+import { getApiBaseUrl, getApiHeaders } from "@/lib/apiBase";
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -23,9 +23,7 @@ export async function GET(request: NextRequest) {
 
     const response = await fetch(`${backendUrl}/api/monitor/status?${params}`, {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${process.env.BACKEND_API_KEY}`,
-      },
+      headers: getApiHeaders(),
     });
 
     if (!response.status === 200) {

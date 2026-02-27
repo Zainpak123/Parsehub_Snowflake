@@ -1,6 +1,6 @@
 "use client";
 import apiClient from "@/lib/apiClient";
-
+import { getApiHeaders } from "@/lib/apiBase";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -162,6 +162,7 @@ export default function ProjectsList({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...getApiHeaders(),
         },
       });
 

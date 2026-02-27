@@ -204,13 +204,16 @@ BACKEND_API_KEY = os.getenv('BACKEND_API_KEY', 't_hmXetfMCq3')
 
 
 def validate_api_key(request_obj):
-    """Validate API key from Authorization header"""
+    """Validate API key from Authorization (Bearer) or x-api-key header."""
     auth_header = request_obj.headers.get('Authorization', '')
-    if not auth_header.startswith('Bearer '):
-        return False
-
-    token = auth_header.replace('Bearer ', '')
-    return token == BACKEND_API_KEY
+    if auth_header.startswith('Bearer '):
+        token = auth_header.replace('Bearer ', '')
+        if token == BACKEND_API_KEY:
+            return True
+    x_key = request_obj.headers.get('x-api-key', '')
+    if x_key and x_key == BACKEND_API_KEY:
+        return True
+    return False
 
 # ========== MONITORING ENDPOINTS ==========
 

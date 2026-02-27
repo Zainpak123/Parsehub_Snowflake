@@ -1,3 +1,21 @@
+/**
+ * Backend API key for x-api-key header. Read from NEXT_PUBLIC_BACKEND_API_KEY.
+ * Never hardcode the key in code.
+ */
+export function getBackendApiKey(): string | undefined {
+  return process.env.NEXT_PUBLIC_BACKEND_API_KEY;
+}
+
+/**
+ * Headers to send with every request to /api/* (backend).
+ * Includes x-api-key when NEXT_PUBLIC_BACKEND_API_KEY is set.
+ */
+export function getApiHeaders(): Record<string, string> {
+  const key = getBackendApiKey();
+  if (!key) return {};
+  return { 'x-api-key': key };
+}
+
 export function getApiBaseUrl(): string {
     const isServer = typeof window === 'undefined';
 

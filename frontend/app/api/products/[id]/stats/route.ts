@@ -1,4 +1,4 @@
-import { getApiBaseUrl } from "@/lib/apiBase";
+import { getApiBaseUrl, getApiHeaders } from "@/lib/apiBase";
 import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND_URL = getApiBaseUrl();
@@ -15,9 +15,7 @@ export async function GET(
       `${BACKEND_URL}/api/products/${projectId}/stats`,
       {
         method: "GET",
-        headers: {
-          "Authorization": `Bearer ${process.env.PARSEHUB_API_KEY || "t4oahuH8vOki"}`,
-        },
+        headers: getApiHeaders(),
       }
     );
 

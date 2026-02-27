@@ -60,7 +60,7 @@ function getBackendBase(): string {
 }
 
 function getApiKey(): string {
-    return process.env.BACKEND_API_KEY || 't_hmXetfMCq3';
+    return process.env.NEXT_PUBLIC_BACKEND_API_KEY || process.env.BACKEND_API_KEY || '';
 }
 
 // ── Helper: build a structured error payload ───────────────────────────────
@@ -139,9 +139,9 @@ export async function proxyToBackend(
     }
 
     const outgoingHeaders: Record<string, string> = {
-        'Authorization': `Bearer ${apiKey}`,
         'Content-Type':  'application/json',
         'Accept':        'application/json',
+        ...(apiKey ? { 'Authorization': `Bearer ${apiKey}`, 'x-api-key': apiKey } : {}),
     };
 
     // Idempotent methods are safe to retry; mutating ones are not

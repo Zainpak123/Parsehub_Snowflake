@@ -1,5 +1,6 @@
 "use client";
 import apiClient from "@/lib/apiClient";
+import { getApiHeaders } from "@/lib/apiBase";
 
 import { useState, useEffect } from "react";
 import { Download, BarChart3 } from "lucide-react";
@@ -47,6 +48,7 @@ export default function ColumnStatisticsModal({
           `/api/analytics?token=${token}&force=true`,
           {
             signal: controller.signal,
+            headers: getApiHeaders(),
           },
         );
 

@@ -1,8 +1,7 @@
-import { getApiBaseUrl } from "@/lib/apiBase";
+import { getApiBaseUrl, getApiHeaders } from "@/lib/apiBase";
 import { NextRequest, NextResponse } from 'next/server';
 
 const BACKEND_URL = getApiBaseUrl();
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY || 't_hmXetfMCq3';
 
 /**
  * GET /api/import-history
@@ -29,8 +28,8 @@ export async function GET(request: NextRequest) {
     const response = await fetch(backendUrl, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${API_KEY}`,
         'Content-Type': 'application/json',
+        ...getApiHeaders(),
       },
     });
 

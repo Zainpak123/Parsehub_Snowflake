@@ -1,6 +1,6 @@
 "use client";
 import apiClient from "@/lib/apiClient";
-
+import { getApiHeaders } from "@/lib/apiBase";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -192,9 +192,7 @@ export default function ProjectDetailsPage() {
 
       // Fetch project details
       const projectResponse = await fetch(`/api/projects/${token}`, {
-        headers: {
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY || "t_hmXetfMCq3"}`,
-        },
+        headers: getApiHeaders(),
       });
 
       if (projectResponse.ok) {
@@ -205,11 +203,7 @@ export default function ProjectDetailsPage() {
       // Fetch metadata for this project FIRST before calculating progress
       const metadataResponse = await fetch(
         `/api/metadata?project_token=${token}`,
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY || "t_hmXetfMCq3"}`,
-          },
-        },
+        { headers: getApiHeaders() },
       );
 
       if (metadataResponse.ok) {
@@ -247,11 +241,7 @@ export default function ProjectDetailsPage() {
         try {
           const productsStatsResponse = await fetch(
             `/api/products/${projectData.id}/stats`,
-            {
-              headers: {
-                Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY || "t_hmXetfMCq3"}`,
-              },
-            },
+            { headers: getApiHeaders() },
           );
 
           if (productsStatsResponse.ok) {
@@ -267,11 +257,7 @@ export default function ProjectDetailsPage() {
       try {
         const analyticsResponse = await fetch(
           `/api/projects/${token}/analytics`,
-          {
-            headers: {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY || "t_hmXetfMCq3"}`,
-            },
-          },
+          { headers: getApiHeaders() },
         );
 
         if (analyticsResponse.ok) {
@@ -305,7 +291,7 @@ export default function ProjectDetailsPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY || "t_hmXetfMCq3"}`,
+          ...getApiHeaders(),
         },
         body: JSON.stringify({
           project_token: token,
@@ -380,7 +366,7 @@ export default function ProjectDetailsPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY || "t_hmXetfMCq3"}`,
+          ...getApiHeaders(),
         },
       });
 

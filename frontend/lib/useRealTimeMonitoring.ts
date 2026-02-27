@@ -1,4 +1,5 @@
 import apiClient from "@/lib/apiClient";
+import { getApiHeaders } from "@/lib/apiBase";
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 interface MonitoringSession {
@@ -77,6 +78,7 @@ export function useRealTimeMonitoring(): UseRealTimeMonitoringReturn {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            ...getApiHeaders(),
           },
           body: JSON.stringify({
             projectToken,
@@ -137,7 +139,9 @@ export function useRealTimeMonitoring(): UseRealTimeMonitoringReturn {
   const fetchStatus = useCallback(
     async (sessionId: number) => {
       try {
-        const response = await fetch(`/api/monitor/status?sessionId=${sessionId}`);
+        const response = await fetch(`/api/monitor/status?sessionId=${sessionId}`, {
+          headers: getApiHeaders(),
+        });
 
         if (!response.status === 200) {
           throw new Error('Failed to fetch status');
@@ -179,7 +183,8 @@ export function useRealTimeMonitoring(): UseRealTimeMonitoringReturn {
     async (sessionId: number) => {
       try {
         const response = await fetch(
-          `/api/monitor/data?sessionId=${sessionId}&limit=100&offset=${dataOffsetRef.current}`
+          `/api/monitor/data?sessionId=${sessionId}&limit=100&offset=${dataOffsetRef.current}`,
+          { headers: getApiHeaders() }
         );
 
         if (!response.status === 200) {
@@ -225,6 +230,7 @@ export function useRealTimeMonitoring(): UseRealTimeMonitoringReturn {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...getApiHeaders(),
         },
         body: JSON.stringify({
           sessionId: session.sessionId,

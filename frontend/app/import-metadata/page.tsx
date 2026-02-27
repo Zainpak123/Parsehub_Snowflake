@@ -1,5 +1,6 @@
 "use client";
 import apiClient from "@/lib/apiClient";
+import { getApiHeaders } from "@/lib/apiBase";
 
 import { useEffect, useState, useRef } from "react";
 import {
@@ -83,9 +84,7 @@ export default function ImportMetadataPage() {
       console.log("[Import] Fetching import history...");
       
       const response = await fetch("/api/import-history", {
-        headers: {
-          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_KEY || 't_hmXetfMCq3'}`,
-        },
+        headers: getApiHeaders(),
       });
 
       console.log("[Import] Import history response status:", response.status);
@@ -175,9 +174,7 @@ export default function ImportMetadataPage() {
 
       const response = await fetch("/api/metadata/import", {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_KEY || 't_hmXetfMCq3'}`,
-        },
+        headers: getApiHeaders(),
         body: formData,
       });
 

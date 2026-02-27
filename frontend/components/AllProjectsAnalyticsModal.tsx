@@ -1,6 +1,6 @@
 "use client";
 import apiClient from "@/lib/apiClient";
-
+import { getApiHeaders } from "@/lib/apiBase";
 import { useState, useEffect } from "react";
 import { Activity, TrendingUp, Download, Zap, RefreshCw } from "lucide-react";
 import Modal from "./Modal";
@@ -101,6 +101,7 @@ export default function AllProjectsAnalyticsModal({
           try {
             const response = await fetch(
               `/api/analytics?token=${project.token}`,
+              { headers: getApiHeaders() },
             );
             if (response.status === 200) {
               const analytics = response.data;

@@ -1,8 +1,7 @@
-import { getApiBaseUrl } from "@/lib/apiBase";
+import { getApiBaseUrl, getApiHeaders } from "@/lib/apiBase";
 import { NextRequest, NextResponse } from 'next/server';
 
 const BACKEND_URL = getApiBaseUrl();
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY || 't_hmXetfMCq3';
 
 /**
  * POST /api/metadata/import
@@ -33,9 +32,7 @@ export async function POST(request: NextRequest) {
     // NOTE: Do NOT set Content-Type header - fetch will set it automatically for FormData
     const response = await fetch(backendUrl, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${API_KEY}`,
-      },
+      headers: getApiHeaders(),
       body: backendFormData,
     });
 
