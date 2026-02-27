@@ -2,7 +2,11 @@
 # Forces Python 3.11 and installs the libpq C library needed by psycopg2-binary.
 
 [phases.setup]
-nixPkgs = ["python311", "libpq", "gcc"]
+# python311  — explicit runtime version
+# gcc        — needed if any package compiles C extensions
+# postgresql — provides libpq headers; psycopg2-binary bundles its own copy
+#              but pg8000 (pure Python) needs none; keep postgresql as fallback
+nixPkgs = ["python311", "gcc", "postgresql"]
 
 [phases.install]
 cmds = ["pip install --upgrade pip", "pip install -r requirements.txt"]
