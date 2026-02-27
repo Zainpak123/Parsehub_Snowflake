@@ -9,15 +9,11 @@ const nextConfig = {
   /**
    * Rewrite /api/:path* → BACKEND_URL/api/:path*
    *
-   * This acts as a safety net for any request that reaches Next.js but has
-   * no matching app/api/ route file.  The Next.js App Router always resolves
-   * app/api/ handlers first, so existing proxy routes are unaffected.
+   * Evaluated at server start (not build time), so BACKEND_URL is read from
+   * the runtime environment. Next.js App Router resolves app/api/ handlers
+   * first; rewrites are a fallback for paths with no route file.
    *
-   * Required Railway env var on the FRONTEND service:
-   *   BACKEND_URL=https://<your-backend-service>.up.railway.app
-   *
-   * If BACKEND_URL is not set the rewrite list is empty and the app still
-   * boots — the app/api/ proxy routes remain the primary path.
+   * Set on Railway (frontend service): BACKEND_URL or BACKEND_API_URL.
    */
   async rewrites() {
     const backendUrl =
