@@ -128,7 +128,7 @@ def _initialize_services():
                     'region': ['region', 'Region', 'msa_region', 'project_region'],
                     'country': ['country', 'Country', 'msa_country', 'project_country'],
                     'brand': ['brand', 'Brand', 'msa_brand'],
-                    'website': ['website', 'Website', 'site', 'domain', 'main_site'],
+                    'website': ['website', 'Website', 'site', 'domain', 'main_site', 'website_url'],
                 }
                 lookup = {c.lower(): c for c in cols}
                 mapping = {}
