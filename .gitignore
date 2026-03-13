@@ -1,0 +1,225 @@
+# ============================================
+# ENVIRONMENT & SECRETS (CRITICAL - NEVER COMMIT)
+# ============================================
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+.env.*.example
+config/.env
+config/.env.local
+config/.env.production
+
+# ============================================
+# CREDENTIALS & SENSITIVE DATA
+# ============================================
+*.pem
+*.key
+*.cer
+*.crt
+*.pfx
+*.p12
+*.jks
+kubeconfig
+kubeconfig*.yaml
+.ssh/
+.aws/credentials
+.azure/
+.gcloud/
+
+# ============================================
+# PYTHON
+# ============================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+*.whl
+
+# Virtual environments
+venv/
+venv_sf/
+ENV/
+env/
+.venv
+.virtualenv
+
+# ============================================
+# NODE.JS & FRONTEND
+# ============================================
+node_modules/
+package-lock.json
+yarn.lock
+.npm
+.next/
+out/
+.nuxt
+.cache/
+.vuepress/dist
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+frontend/.env.local
+
+# ============================================
+# IDE & EDITOR
+# ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-workspace
+*.sublime-project
+.vim
+.emacs
+*.iml
+.gradle
+
+# ============================================
+# LOGS & OUTPUT
+# ============================================
+logs/
+*.log
+npm-debug.log*
+yarn-error.log*
+lerna-debug.log*
+*.log.gz
+backend.log
+backend_*.log
+migration_log.txt
+progress.txt
+ingestion_results.json
+
+# ============================================
+# DATABASE & DATA FILES
+# ============================================
+*.db
+*.sqlite
+*.sqlite3
+*.backup
+*.dump
+parsehub.db
+database.sqlite
+*.sql
+
+# ============================================
+# BUILD & DIST
+# ============================================
+dist/
+build/
+*.tar.gz
+*.zip
+.serverless/
+.serverless_plugins/
+
+# ============================================
+# TESTING
+# ============================================
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+coverage.xml
+
+# ============================================
+# DOCKER
+# ============================================
+.dockerignore
+docker-compose.override.yml
+Dockerfile.dev
+
+# ============================================
+# OS FILES
+# ============================================
+Thumbs.db
+.DS_Store
+*.swp
+*.swo
+*~
+.Spotlight-V100
+.Trashes
+
+# ============================================
+# TEMPORARY & CACHE FILES
+# ============================================
+tmp/
+temp/
+*.tmp
+*.temp
+.cache/
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ============================================
+# IDE SPECIFIC
+# ============================================
+*.iml
+local.properties
+gradle.properties
+.gradle/
+.java-version
+
+# ============================================
+# DEVELOPMENT TOOLS
+# ============================================
+.vscode/settings.json
+.vscode/launch.json
+.vscode/extensions.json
+.editorconfig
+.prettierrc.local
+tsconfig.local.json
+
+# ============================================
+# KUBERNETES & INFRASTRUCTURE
+# ============================================
+kubeconfig
+*.yaml.local
+infrastructure/kubernetes/overlays/*/secrets.yaml
+infrastructure/**/.env
+infrastructure/**/*.pem
+infrastructure/**/*.key
+terraform/**/.terraform/
+terraform/**/*.tfstate*
+
+# ============================================
+# SCRIPTS & TOOLS
+# ============================================
+scripts/local/
+scripts/dev/
+*.sh.local
+
+# ============================================
+# MISC
+# ============================================
+.env.sample
+active_runs.json
+session_urls.json
+parsehub.db
+result.json
+output.json

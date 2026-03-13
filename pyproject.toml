@@ -1,0 +1,103 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "parsehub-dashboard"
+version = "1.0.0"
+description = "Real-time monitoring and data collection platform for ParseHub projects"
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "MIT"}
+authors = [
+    {name = "ParseHub Dashboard Team", email = "team@example.com"}
+]
+keywords = ["parsehub", "monitoring", "data-collection", "analytics", "snowflake"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Framework :: Flask",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = [
+    "flask==3.0.0",
+    "flask-cors==4.0.0",
+    "gunicorn==21.2.0",
+    "requests==2.31.0",
+    "urllib3==2.1.0",
+    "python-dotenv==1.0.0",
+    "apscheduler==3.10.4",
+    "werkzeug==3.0.0",
+    "snowflake-connector-python==3.10.1",
+    "snowflake-sqlalchemy==1.5.1",
+    "sqlalchemy==1.4.52",
+    "cryptography==41.0.7",
+    "PyJWT==2.11.0",
+    "typing-extensions==4.8.0",
+    "packaging==23.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==7.4.3",
+    "pytest-cov==4.1.0",
+    "black==23.12.0",
+    "flake8==6.1.0",
+    "mypy==1.7.1",
+    "isort==5.13.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourorg/parsehub-dashboard"
+Documentation = "https://github.com/yourorg/parsehub-dashboard/tree/main/docs"
+Repository = "https://github.com/yourorg/parsehub-dashboard.git"
+Issues = "https://github.com/yourorg/parsehub-dashboard/issues"
+
+[tool.setuptools]
+packages = ["backend.src"]
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+skip_gitignore = true
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "--strict-markers --tb=short"
+
+[tool.coverage.run]
+source = ["backend/src"]
+omit = ["*/tests/*", "*/__init__.py"]

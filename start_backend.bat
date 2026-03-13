@@ -1,8 +1,12 @@
 @echo off
-REM ==============================================
-REM ParseHub Backend Startup Script
-REM ==============================================
-REM This script starts the Flask backend server
-REM Run this in a separate PowerShell terminal
+REM Start Flask Backend - Simple wrapper
 
-powershell -NoExit -Command "cd d:\Parsehub; .\.venv\Scripts\Activate.ps1; cd backend; python api_server.py"
+cd /d "%~dp0\backend"
+
+echo Starting ParseHub Flask Backend...
+echo Port: 5000
+echo.
+
+python -u src/api/api_server.py
+
+pause

@@ -138,10 +138,20 @@ export async function proxyToBackend(
         try { body = await req.text(); } catch { body = undefined; }
     }
 
+    // Determine if this endpoint requires authentication
+    // Public read-only endpoints don't need auth (handled server-side anyway)
+    const isPublicEndpoint = method === 'GET' && (
+        backendPath.startsWith('/api/filters') ||
+        backendPath.startsWith('/api/metadata') ||
+        backendPath.startsWith('/api/projects?') ||
+        backendPath.startsWith('/api/health')
+    );
+
     const outgoingHeaders: Record<string, string> = {
         'Content-Type':  'application/json',
         'Accept':        'application/json',
-        ...(apiKey ? { 'Authorization': `Bearer ${apiKey}`, 'x-api-key': apiKey } : {}),
+        // Only add API key for non-public endpoints or mutating operations
+        ...(!isPublicEndpoint && apiKey ? { 'Authorization': `Bearer ${apiKey}`, 'x-api-key': apiKey } : {}),
     };
 
     // Idempotent methods are safe to retry; mutating ones are not
