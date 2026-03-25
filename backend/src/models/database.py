@@ -2049,12 +2049,29 @@ class ParseHubDatabase:
                 ORDER BY ORDINAL_POSITION
             """)
             rows = cursor.fetchall()
-            out = [r['COLUMN_NAME'] if isinstance(r, dict) else r[0] for r in rows]
+            # Cursor shim returns dicts with lowercase keys from Snowflake result metadata
+            out = []
+            for r in rows:
+                if isinstance(r, dict):
+                    # Try lowercase first (from cursor shim), fallback to uppercase
+                    val = r.get('column_name') or r.get('COLUMN_NAME')
+                    # If no matching key, try to get first value
+                    if not val:
+                        val = next(iter(r.values()), None)
+                    if not val:
+                        val = r[0] if r else None
+                else:
+                    val = r[0] if isinstance(r, (list, tuple)) and r else None
+                if val:
+                    out.append(val)
+            print(f"[DB] get_metadata_table_columns returned: {out}")
             if auto_disconnect:
                 self.disconnect()
             return out
         except Exception as e:
             print(f"Error getting metadata columns: {e}")
+            import traceback
+            traceback.print_exc()
             if auto_disconnect:
                 self.disconnect()
             return []
@@ -2064,7 +2081,10 @@ class ParseHubDatabase:
         Assumes connection is already established."""
         try:
             columns = self.get_metadata_table_columns(auto_disconnect=False)
-            if column_name not in columns:
+            # Column might have different case - do case-insensitive check
+            col_exists = any(c.lower() == column_name.lower() for c in columns)
+            if not col_exists:
+                print(f"[DB] Column {column_name} not found in metadata table. Available: {columns}")
                 return []
             
             cursor = self.cursor()
@@ -2074,10 +2094,24 @@ class ParseHubDatabase:
                 f'SELECT DISTINCT {q} FROM metadata WHERE {q} IS NOT NULL AND {q} != \'\' ORDER BY {q}'
             )
             rows = cursor.fetchall()
-            out = [r[column_name] if isinstance(r, dict) else r[0] for r in rows]
+            print(f"[DB] Query for {column_name} returned {len(rows)} rows")
+            
+            # Cursor shim returns dicts with lowercase keys from result metadata
+            out = []
+            for r in rows:
+                if isinstance(r, dict):
+                    # Snowflake result has column name as lowercase key (from cursor shim)
+                    val = r.get(column_name.lower()) or r.get(column_name) or next(iter(r.values()), None)
+                else:
+                    val = r[0] if isinstance(r, (list, tuple)) and r else None
+                if val:
+                    out.append(val)
+            print(f"[DB] {column_name} distinct values: {len(out)} items")
             return out
         except Exception as e:
             print(f"Error getting distinct values for {column_name}: {e}")
+            import traceback
+            traceback.print_exc()
             return []
 
     def _get_distinct_regions_from_metadata(self) -> list:
@@ -2094,10 +2128,28 @@ class ParseHubDatabase:
                 ORDER BY 1
             ''')
             rows = cursor.fetchall()
-            out = [r.get('region', r[0]) if isinstance(r, dict) else r[0] for r in rows if (r.get('region') if isinstance(r, dict) else r[0])]
+            print(f"[DB] _get_distinct_regions_from_metadata: Got {len(rows)} rows")
+            
+            # Cursor shim returns dicts with lowercase keys from result metadata (aliased as 'region')
+            out = []
+            for r in rows:
+                val = None
+                if isinstance(r, dict):
+                    # Alias 'AS region' becomes lowercase key 'region' in dict
+                    val = r.get('region') or r.get('REGION')
+                    # If no 'region' key, try first dict value
+                    if not val:
+                        val = next(iter(r.values()), None)
+                else:
+                    val = r[0] if isinstance(r, (list, tuple)) and r else None
+                if val:
+                    out.append(val)
+            print(f"[DB] _get_distinct_regions_from_metadata: Returning {len(out)} regions")
             return out
         except Exception as e:
             print(f"Error getting distinct regions from metadata: {e}")
+            import traceback
+            traceback.print_exc()
             return []
 
     def _get_distinct_regions_from_project_titles_or_domains(self) -> list:
