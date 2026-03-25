@@ -2263,26 +2263,34 @@ class ParseHubDatabase:
             result = {'regions': [], 'countries': [], 'brands': [], 'websites': []}
             region_source = 'none'
             
+            # Find actual column names in the table (match candidate names)
+            region_col = next((columns_lookup[k.lower()] for k in CANDIDATES['region'] if k.lower() in columns_lookup), None)
+            country_col = next((columns_lookup[k.lower()] for k in CANDIDATES['country'] if k.lower() in columns_lookup), None)
+            brand_col = next((columns_lookup[k.lower()] for k in CANDIDATES['brand'] if k.lower() in columns_lookup), None)
+            website_col = next((columns_lookup[k.lower()] for k in CANDIDATES['website'] if k.lower() in columns_lookup), None)
+            
+            print(f"[FILTERS] Found columns - region={region_col}, country={country_col}, brand={brand_col}, website={website_col}")
+            
             # Query regions
-            if any(k.lower() in columns_lookup for k in CANDIDATES['region']):
+            if region_col:
                 result['regions'] = self._get_distinct_regions_from_metadata()
                 print(f"[FILTERS] Regions: {result['regions']}")
                 if result['regions']:
-                    region_source = f'metadata.region'
+                    region_source = f'metadata.{region_col}'
             
             # Query countries
-            if any(k.lower() in columns_lookup for k in CANDIDATES['country']):
-                result['countries'] = self._get_distinct_values_for_metadata_column('COUNTRY')
+            if country_col:
+                result['countries'] = self._get_distinct_values_for_metadata_column(country_col)
                 print(f"[FILTERS] Countries: {result['countries']}")
             
             # Query brands
-            if any(k.lower() in columns_lookup for k in CANDIDATES['brand']):
-                result['brands'] = self._get_distinct_values_for_metadata_column('BRAND')
+            if brand_col:
+                result['brands'] = self._get_distinct_values_for_metadata_column(brand_col)
                 print(f"[FILTERS] Brands: {result['brands']}")
             
             # Query websites
-            if any(k.lower() in columns_lookup for k in CANDIDATES['website']):
-                result['websites'] = self._get_distinct_values_for_metadata_column('WEBSITE_URL')
+            if website_col:
+                result['websites'] = self._get_distinct_values_for_metadata_column(website_col)
                 print(f"[FILTERS] Websites count: {len(result['websites'])}")
 
             # Fallback for regions if not found
