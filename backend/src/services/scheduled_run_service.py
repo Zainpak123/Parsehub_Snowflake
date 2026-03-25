@@ -44,7 +44,7 @@ class ScheduledRunService:
             query = """
             SELECT job_id, project_token, schedule_type, scheduled_time, frequency, 
                    day_of_week, pages, created_at 
-            FROM SCHEDULED_RUNS 
+            FROM scheduled_runs 
             WHERE active = TRUE
             """
             cursor.execute(query)
@@ -275,7 +275,7 @@ class ScheduledRunService:
                 try:
                     conn = self.db.connect()
                     cursor = self.db.cursor()
-                    query = "UPDATE SCHEDULED_RUNS SET active = FALSE WHERE job_id = %s"
+                    query = "UPDATE scheduled_runs SET active = FALSE WHERE job_id = %s"
                     cursor.execute(query, (job_id,))
                     conn.commit()
                     self.db.disconnect()
@@ -301,7 +301,7 @@ class ScheduledRunService:
             try:
                 conn = self.db.connect()
                 cursor = self.db.cursor()
-                query = "SELECT job_id, project_token, schedule_type, scheduled_time, frequency, day_of_week, pages, created_at FROM SCHEDULED_RUNS WHERE active = TRUE ORDER BY created_at DESC"
+                query = "SELECT job_id, project_token, schedule_type, scheduled_time, frequency, day_of_week, pages, created_at FROM scheduled_runs WHERE active = TRUE ORDER BY created_at DESC"
                 cursor.execute(query)
                 db_runs = cursor.fetchall()
                 self.db.disconnect()
@@ -339,7 +339,7 @@ class ScheduledRunService:
             cursor = self.db.cursor()
             
             query = """
-            INSERT INTO SCHEDULED_RUNS 
+            INSERT INTO scheduled_runs 
             (job_id, project_token, schedule_type, scheduled_time, frequency, day_of_week, pages, created_at, active)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
