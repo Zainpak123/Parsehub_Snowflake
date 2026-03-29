@@ -1,0 +1,120 @@
+name: Deploy to Azure AKS
+
+on:
+  push:
+    branches:
+      - main
+
+# Prevent concurrent deployments — if a new push comes in while
+# one deploy is running, cancel the in-progress run first.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+env:
+  ACR_REGISTRY: parsehubacr2026.azurecr.io
+  BACKEND_IMAGE: parsehubacr2026.azurecr.io/parsehub-backend
+  FRONTEND_IMAGE: parsehubacr2026.azurecr.io/parsehub-frontend
+  AKS_CLUSTER: parsehub-cluster
+  AKS_RG: parsehub-rg
+  NAMESPACE: parsehub
+
+jobs:
+  deploy:
+    name: Build, Push, Deploy
+    runs-on: ubuntu-latest
+    steps:
+
+      # ── 1. Checkout code ──────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Log in to Azure ────────────────────────────────────────
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # ── 3. Log in to ACR ──────────────────────────────────────────
+      - name: Log in to Azure Container Registry
+        run: az acr login --name ${{ secrets.ACR_NAME }}
+
+      # ── 4. Build and push backend image ───────────────────────────
+      - name: Build backend image
+        run: |
+          docker build \
+            -t ${{ env.BACKEND_IMAGE }}:${{ github.sha }} \
+            -t ${{ env.BACKEND_IMAGE }}:latest \
+            -f infrastructure/docker/Dockerfile-backend \
+            .
+
+      - name: Push backend image
+        run: |
+          docker push ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+          docker push ${{ env.BACKEND_IMAGE }}:latest
+
+      # ── 5. Build and push frontend image ──────────────────────────
+      - name: Build frontend image
+        run: |
+          docker build \
+            -t ${{ env.FRONTEND_IMAGE }}:${{ github.sha }} \
+            -t ${{ env.FRONTEND_IMAGE }}:latest \
+            -f infrastructure/docker/Dockerfile-frontend \
+            .
+
+      - name: Push frontend image
+        run: |
+          docker push ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+          docker push ${{ env.FRONTEND_IMAGE }}:latest
+
+      # ── 6. Get AKS credentials ────────────────────────────────────
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials \
+            --resource-group ${{ env.AKS_RG }} \
+            --name ${{ env.AKS_CLUSTER }} \
+            --overwrite-existing
+
+      # ── 7. Rolling restart (zero-downtime) ────────────────────────
+      # Uses kubectl set image — Kubernetes creates new pod first,
+      # waits for readiness probe to pass, then removes old pod.
+      # Live traffic is never interrupted.
+      - name: Deploy backend (rolling restart)
+        run: |
+          kubectl set image deployment/backend \
+            backend=${{ env.BACKEND_IMAGE }}:${{ github.sha }} \
+            -n ${{ env.NAMESPACE }}
+          kubectl rollout status deployment/backend \
+            -n ${{ env.NAMESPACE }} \
+            --timeout=180s
+
+      - name: Deploy frontend (rolling restart)
+        run: |
+          kubectl set image deployment/frontend \
+            frontend=${{ env.FRONTEND_IMAGE }}:${{ github.sha }} \
+            -n ${{ env.NAMESPACE }}
+          kubectl rollout status deployment/frontend \
+            -n ${{ env.NAMESPACE }} \
+            --timeout=180s
+
+      # ── 8. Verify pods are healthy ────────────────────────────────
+      - name: Verify pod health
+        run: |
+          echo "=== Pod status ==="
+          kubectl get pods -n ${{ env.NAMESPACE }}
+          echo ""
+          echo "=== Backend rollout ==="
+          kubectl rollout history deployment/backend -n ${{ env.NAMESPACE }}
+          echo ""
+          echo "=== Frontend rollout ==="
+          kubectl rollout history deployment/frontend -n ${{ env.NAMESPACE }}
+
+      # ── 9. Summary ────────────────────────────────────────────────
+      - name: Deployment summary
+        run: |
+          echo "✅ Deployment complete"
+          echo "   Commit:    ${{ github.sha }}"
+          echo "   Pushed by: ${{ github.actor }}"
+          echo "   Branch:    ${{ github.ref_name }}"
+          echo "   Backend:   ${{ env.BACKEND_IMAGE }}:${{ github.sha }}"
+          echo "   Frontend:  ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}"
