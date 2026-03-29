@@ -11,6 +11,13 @@ RUN npm ci
 # Copy source
 COPY frontend/ .
 
+# Build-time API URL variables required by Next.js
+ARG NEXT_PUBLIC_API_BASE_URL
+ARG NEXT_PUBLIC_BACKEND_URL
+
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL
+
 # Build Next.js
 RUN npm run build
 
@@ -22,11 +29,18 @@ WORKDIR /app
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init
 
+ENV NODE_ENV=production
+
 # Copy from builder
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/node_modules ./node_modules
+
+# If your app uses next.config.js / jsconfig / tsconfig at runtime, keep them too
+COPY --from=builder /app/next.config.* ./
+COPY --from=builder /app/tsconfig.json ./ 2>/dev/null || true
+COPY --from=builder /app/jsconfig.json ./ 2>/dev/null || true
 
 # Create non-root user
 RUN addgroup -g 1000 appuser && \
@@ -41,7 +55,6 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 EXPOSE 3000
 
-# Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
 # Start Next.js in production mode

@@ -1,13 +1,12 @@
 import { getApiBaseUrl, getApiHeaders } from "@/lib/apiBase";
 import { NextRequest, NextResponse } from 'next/server'
 
-const BACKEND_URL = getApiBaseUrl();
-
 export async function GET(
   _request: NextRequest,
   { params }: { params: { token: string } }
 ) {
   try {
+    const BACKEND_URL = getApiBaseUrl();
     const { token } = params
 
     const response = await fetch(

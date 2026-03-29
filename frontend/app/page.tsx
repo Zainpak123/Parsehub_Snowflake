@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Activity,
   TrendingUp,
@@ -108,15 +108,16 @@ export default function Home() {
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [fetchAll, setFetchAll] = useState(false); // Toggle for fetching all projects vs paginated
 
+  // Ref to cancel previous in-flight project requests when a new one starts
+  const fetchControllerRef = useRef<AbortController | null>(null);
+
   // Real-time monitoring hook
   const monitoring = useRealTimeMonitoring();
 
   useEffect(() => {
     fetchFilters();
-    fetchMetadata();
     const interval = setInterval(() => {
       fetchProjects();
-      fetchMetadata();
     }, 30000); // Refresh every 30s
     return () => clearInterval(interval);
   }, []);
@@ -174,6 +175,11 @@ export default function Home() {
   };
 
   const fetchProjects = async () => {
+    // Cancel any previous in-flight request (e.g. rapid filter changes or re-mounts)
+    fetchControllerRef.current?.abort();
+    const controller = new AbortController();
+    fetchControllerRef.current = controller;
+
     try {
       setError(null);
       let url = "/api/projects";
@@ -197,14 +203,12 @@ export default function Home() {
 
       console.log("[Home] Fetching projects from:", url);
 
-      // Use 30 second timeout for paginated requests (not 300 seconds!)
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-
       const response = await apiClient.get(url, {
         signal: controller.signal,
       });
-      clearTimeout(timeoutId);
+
+      // If this request was superseded by a newer one, bail silently
+      if (controller.signal.aborted) return;
 
       const data = response.data;
       console.log(
@@ -248,24 +252,26 @@ export default function Home() {
         );
       }
 
-      // Enrich projects with metadata
-      const projectsWithMetadata = await Promise.all(
-        allProjects.map(async (project: Project) => {
-          try {
-            const metaRes = await fetch(`/api/metadata?project_token=${project.token}`);
-            const metaData = await metaRes.json();
-            
-            if (metaData.success && metaData.records?.length > 0) {
-              project.metadata = metaData.records[0];
-            }
-          } catch (err) {
-            console.error(`Failed to fetch metadata for ${project.token}:`, err);
+      // Enrich projects with metadata using a single bulk fetch
+      try {
+        const metaRes = await apiClient.get("/api/metadata", { params: { limit: 1000 } });
+        const metaData = metaRes.data;
+        if (metaData.success && metaData.records?.length > 0) {
+          const metaMap: Record<string, typeof metaData.records[0]> = {};
+          for (const rec of metaData.records) {
+            metaMap[rec.project_token] = rec;
           }
-          return project;
-        })
-      );
+          for (const project of allProjects) {
+            if (metaMap[project.token]) {
+              project.metadata = metaMap[project.token];
+            }
+          }
+        }
+      } catch (err) {
+        console.error("[Home] Failed to fetch bulk metadata:", err);
+      }
 
-      setProjects(projectsWithMetadata);
+      setProjects(allProjects);
       setLastUpdate(new Date());
       setBackendDown(false);
 
@@ -289,6 +295,8 @@ export default function Home() {
 
       setLoading(false);
     } catch (err) {
+      // Silently ignore intentional cancellations (superseded by a newer fetch)
+      if (controller.signal.aborted) return;
       const errorMsg = extractErrorMessage(err);
       console.error("[Home] Error fetching projects:", errorMsg);
       setError(errorMsg);

@@ -64,9 +64,12 @@ export default function ProjectsPage() {
 
   useEffect(() => {
     fetchProjects();
+  }, [selectedRegion, selectedCountry, selectedBrand]);
+
+  useEffect(() => {
     const interval = setInterval(fetchProjects, 30000);
     return () => clearInterval(interval);
-  }, [selectedRegion, selectedCountry, selectedBrand]);
+  }, []);
 
   const fetchProjects = async () => {
     try {

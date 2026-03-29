@@ -89,12 +89,13 @@ export default function ImportMetadataPage() {
 
       console.log("[Import] Import history response status:", response.status);
 
-      if (response.status === 200) {
-        const data = response.data;
+      if (response.ok) {
+        const data = await response.json();
         console.log("[Import] Successfully fetched import history -", data.count || 0, "batches");
         setImportHistory(data.batches || []);
       } else {
-        const errorData = response.data.catch(() => ({}));
+        let errorData: Record<string, unknown> = {};
+        try { errorData = await response.json(); } catch { /* non-JSON error body */ }
         console.error("[Import] Failed to fetch history:", response.status, errorData);
       }
     } catch (err) {
