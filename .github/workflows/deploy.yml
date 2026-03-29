@@ -86,7 +86,7 @@ jobs:
             -n ${{ env.NAMESPACE }}
           kubectl rollout status deployment/backend \
             -n ${{ env.NAMESPACE }} \
-            --timeout=180s
+            --timeout=300s
 
       - name: Deploy frontend (rolling restart)
         run: |
@@ -95,7 +95,7 @@ jobs:
             -n ${{ env.NAMESPACE }}
           kubectl rollout status deployment/frontend \
             -n ${{ env.NAMESPACE }} \
-            --timeout=180s
+            --timeout=300s
 
       # ── 8. Verify pods are healthy ────────────────────────────────
       - name: Verify pod health
