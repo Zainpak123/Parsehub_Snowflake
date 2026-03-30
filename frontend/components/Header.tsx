@@ -45,7 +45,7 @@ export default function Header() {
     }`;
 
   return (
-    <header className=" sticky top-0 z-50 shadow-2xl">
+    <header className="bg-slate-900/95 backdrop-blur-md border-b border-slate-800/50 sticky top-0 z-50 shadow-2xl">
       <div className="container mx-auto px-6">
         {/* Main Header */}
         <div className="py-5 flex items-center justify-between border-b border-slate-800/30">
