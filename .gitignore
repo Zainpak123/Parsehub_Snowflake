@@ -12,6 +12,10 @@
 config/.env
 config/.env.local
 config/.env.production
+backend/.env
+*.db-shm
+*.db-wal
+*.db
 
 # ============================================
 # CREDENTIALS & SENSITIVE DATA
